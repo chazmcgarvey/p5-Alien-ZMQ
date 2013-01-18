@@ -10,7 +10,6 @@ use Cwd qw/realpath/;
 use Digest::SHA qw/sha1_hex/;
 use File::Path qw/remove_tree/;
 use File::Spec::Functions qw/catdir catfile/;
-use IPC::Cmd qw/can_run run/;
 use LWP::Simple qw/getstore RC_OK/;
 use Module::Build;
 
@@ -155,8 +154,6 @@ sub install_zeromq {
     my $self = shift;
     my $cb = $self->cbuilder;
 
-    can_run("libtool") or die "The libtool command cannot be found";
-
     my $version = $self->notes('zmq-version');
     my $sha1 = $self->notes('zmq-sha1');
     my $archive = "zeromq-$version.tar.gz";
@@ -185,14 +182,14 @@ sub install_zeromq {
     say "Configuring...";
     my @config = $cb->split_like_shell($self->args('zmq-config') || "");
     chdir $srcdir;
-    run(command => ["./configure", "--prefix=$prefix", @config])
+    $cb->do_system("./configure", "--prefix=$prefix", @config)
         or die "Failed to configure ØMQ";
 
     say "Compiling...";
-    run(command => ['make']) or die "Failed to make ØMQ";
+    $cb->do_system("make") or die "Failed to make ØMQ";
 
     say "Installing...";
-    run(command => [qw|make install prefix=/|, "DESTDIR=$datadir"])
+    $cb->do_system(qw|make install prefix=/|, "DESTDIR=$datadir")
         or die "Failed to install ØMQ";
 
     chdir $basedir;
