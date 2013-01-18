@@ -102,9 +102,9 @@ END
 
         # use -I and -L flag arguments as extra search directories
         my $inc = `$pkg_config $pkg --cflags-only-I`;
-        push @inc_search, map { s/^-I//; $_ } split(/\s+/, $inc);
+        push @inc_search, map { s/^-I//; $_ } $cb->split_like_shell($inc);
         my $lib = `$pkg_config $pkg --libs-only-L`;
-        push @lib_search, map { s/^-L//; $_ } split(/\s+/, $lib);
+        push @lib_search, map { s/^-L//; $_ } $cb->split_like_shell($lib);
 
         last;
     }
@@ -153,6 +153,7 @@ END
 
 sub install_zeromq {
     my $self = shift;
+    my $cb = $self->cbuilder;
 
     can_run("libtool") or die "The libtool command cannot be found";
 
@@ -182,7 +183,7 @@ sub install_zeromq {
     my $srcdir  = catdir($basedir, "zeromq-$version");
 
     say "Configuring...";
-    my @config = split(/\s/, $self->args('zmq-config') || "");
+    my @config = $cb->split_like_shell($self->args('zmq-config') || "");
     chdir $srcdir;
     run(command => ["./configure", "--prefix=$prefix", @config])
         or die "Failed to configure ØMQ";
