@@ -65,6 +65,7 @@ sub ACTION_code {
 sub probe_zeromq {
     my $self = shift;
     my $cb = $self->cbuilder;
+    my %config = $cb->get_config;
 
     my $src = "test-$$.c";
     open my $SRC, ">$src";
@@ -125,13 +126,12 @@ END
     my ($inc_version, $lib_version) = $out =~ /(\d\.\d\.\d) (\d\.\d\.\d)/;
 
     # query the compiler for include and library search paths
-    my $cc = $ENV{CC} || "cc";
     push @lib_search, map {
         my $path = $_;
         $path =~ s/^.+ =?//;
         $path =~ s/\n.*$//;
         -d $path ? realpath($path) : ();
-    } split /:/, `$cc -print-search-dirs`;
+    } split /:/, `$config{cc} -print-search-dirs`;
     push @inc_search, map {
         my $path = $_;
         $path =~ s/lib(32|64)?$/include/;
@@ -140,11 +140,7 @@ END
 
     # search for the header and library files
     my ($inc_dir) = grep { -f catfile($_, "zmq.h") } @inc_search;
-    my ($lib_dir) = grep {
-        -f catfile($_, "libzmq.so")    ||
-        -f catfile($_, "libzmq.dylib") ||
-        -f catfile($_, "libzmq.dll")
-    } @lib_search;
+    my ($lib_dir) = grep { -f catfile($_, $cb->lib_file("libzmq")) } @lib_search;
 
     (
         inc_version => $inc_version,
