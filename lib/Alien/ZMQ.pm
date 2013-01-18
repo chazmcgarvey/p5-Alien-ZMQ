@@ -4,6 +4,8 @@ package Alien::ZMQ;
 use warnings;
 use strict;
 
+use String::ShellQuote qw/shell_quote/;
+
 =head1 DESCRIPTION
 
 Upon installation, the target system is probed for the presence of libzmq.  If
@@ -118,7 +120,7 @@ is a shortcut for constructing a C<-I> flag using C<inc_dir>.
 =cut
 
 sub cflags {
-    "-I'" . inc_dir . "'";
+    "-I" . shell_quote(inc_dir);
 }
 
 =method libs
@@ -129,7 +131,7 @@ a shortcut for constructing a C<-L> flag using C<lib_dir>, plus C<-lzmq>.
 =cut
 
 sub libs {
-    "-L'" . lib_dir . "' -lzmq";
+    "-L" . shell_quote(lib_dir) . " -lzmq";
 }
 
 1;
