@@ -10,6 +10,7 @@ use Cwd qw/realpath/;
 use Digest::SHA qw/sha1_hex/;
 use File::Path qw/remove_tree/;
 use File::Spec::Functions qw/catdir catfile/;
+use IPC::Run qw/run/;
 use LWP::Simple qw/getstore RC_OK/;
 use Module::Build;
 
@@ -33,7 +34,7 @@ sub ACTION_code {
         %vars = $self->probe_zeromq;
     }
 
-    if ($vars{inc_version} && $vars{lib_version}) {
+    if ($vars{inc_version} && $vars{lib_version} && $vars{inc_dir} && $vars{lib_dir}) {
         say "Found ØMQ $vars{lib_version}; skipping installation";
     } else {
         say "ØMQ not found; building from source...";
@@ -42,7 +43,7 @@ sub ACTION_code {
 
     # write vars to ZMQ.pm
     my $module = catfile qw/blib lib Alien ZMQ.pm/;
-    open my $LIB, "<$module" or die "Cannot read module";
+    open my $LIB, '<', $module or die "Cannot read module";
     my $lib = do { local $/; <$LIB> };
     close $LIB;
     $lib =~ s/^sub inc_dir.*$/sub inc_dir { "$vars{inc_dir}" }/m;
@@ -51,12 +52,12 @@ sub ACTION_code {
     $lib =~ s/^sub lib_version.*$/sub lib_version { v$vars{lib_version} }/m;
     my @stats = stat $module;
     chmod 0644, $module;
-    open $LIB, ">$module" or die "Cannot write config to module";
+    open $LIB, '>', $module or die "Cannot write config to module";
     print $LIB $lib;
     close $LIB;
     chmod $stats[2], $module;
 
-    open my $TARGET, ">build-zeromq";
+    open my $TARGET, '>', "build-zeromq";
     print $TARGET time, "\n";
     close $TARGET;
 }
@@ -67,7 +68,7 @@ sub probe_zeromq {
     my %config = $cb->get_config;
 
     my $src = "test-$$.c";
-    open my $SRC, ">$src";
+    open my $SRC, '>', $src;
     print $SRC <<END;
 #include <stdio.h>
 #include <zmq.h>
@@ -164,7 +165,7 @@ sub install_zeromq {
 
     say "Verifying...";
     my $sha1sum = Digest::SHA->new;
-    open my $ARCHIVE, "<$archive";
+    open my $ARCHIVE, '<', $archive or die "Can't open source archive";
     binmode $ARCHIVE;
     $sha1sum->addfile($ARCHIVE);
     close $ARCHIVE;
@@ -178,10 +179,15 @@ sub install_zeromq {
     my $basedir = $self->base_dir;
     my $datadir = catdir($basedir, "share");
     my $srcdir  = catdir($basedir, "zeromq-$version");
+    chdir $srcdir;
+
+    say "Patching...";
+    for my $patch (glob("$basedir/files/zeromq-$version-*.patch")) {
+	run ["patch"], '<', $patch or die "Failed to patch ØMQ";
+    }
 
     say "Configuring...";
     my @config = $cb->split_like_shell($self->args('zmq-config') || "");
-    chdir $srcdir;
     $cb->do_system(qw/sh configure CPPFLAGS=-Wno-error/, "--prefix=$prefix", @config)
         or die "Failed to configure ØMQ";
 
