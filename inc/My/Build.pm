@@ -182,7 +182,7 @@ sub install_zeromq {
     say "Configuring...";
     my @config = $cb->split_like_shell($self->args('zmq-config') || "");
     chdir $srcdir;
-    $cb->do_system(qw/sh configure/, "--prefix=$prefix", @config)
+    $cb->do_system(qw/sh configure CPPFLAGS=-Wno-error/, "--prefix=$prefix", @config)
         or die "Failed to configure ØMQ";
 
     say "Compiling...";
