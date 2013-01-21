@@ -1,6 +1,6 @@
 package My::Build;
 
-use v5.10;
+use v5.10.1;
 use warnings FATAL => 'all';
 use strict;
 use utf8;
