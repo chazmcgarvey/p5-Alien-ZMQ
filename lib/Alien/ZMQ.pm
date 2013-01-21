@@ -40,7 +40,7 @@ These options to F<Build.PL> affect the installation of this module.
 By default, libzmq is not compiled and installed if it is detected to already
 be on the system.  Use this to skip those checks and always install libzmq.
 
-=item --zmq-cflags=FLAGS
+=item --zmq-cflags
 
 Pass extra flags to the compiler when probing for an existing installation of
 libzmq.  You can use this, along with L</--zmq-libs>, to help the probing
@@ -63,7 +63,7 @@ L<pkg-config(1)> program installed.  Here's an example:
     perl Build.PL
     PKG_CONFIG_PATH=/opt/zeromq/lib/pkgconfig ./Build
 
-=item --zmq-libs=FLAGS
+=item --zmq-libs
 
 Pass extra flags to the linker when probing for an existing installation of
 libzmq.  You can use this, along with L</--zmq-cflags>, to help the probing
@@ -71,7 +71,7 @@ function locate your libzmq installation if it is installed in an unexpected
 place.  Like L</--zmq-cflags>, these flags are only used by the probing
 function to locate libzmq.
 
-=item --zmq-config=FLAGS
+=item --zmq-config
 
 Pass extra flags to the libzmq F<configure> script.  You may want to consider
 passing either C<--with-pgm> or C<--with-system-pgm> if you need support for
