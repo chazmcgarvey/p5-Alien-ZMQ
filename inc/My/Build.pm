@@ -183,7 +183,7 @@ sub install_zeromq {
 
     say "Patching...";
     for my $patch (glob("$basedir/files/zeromq-$version-*.patch")) {
-	run ["patch"], '<', $patch or die "Failed to patch ØMQ";
+	run [qw/patch -p1/], '<', $patch or die "Failed to patch ØMQ";
     }
 
     say "Configuring...";
