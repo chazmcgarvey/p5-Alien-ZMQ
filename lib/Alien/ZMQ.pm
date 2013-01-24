@@ -88,7 +88,7 @@ you will also need to reinstall L<Alien::ZMQ>.
 
 =head1 BUGS
 
-Windows is not yet supported.  Patches are welcome.
+MSWin32 is not yet supported, but cygwin works.
 
 =head1 SEE ALSO
 
