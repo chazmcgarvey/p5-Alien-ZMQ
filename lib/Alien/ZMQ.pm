@@ -1,5 +1,5 @@
 package Alien::ZMQ;
-# ABSTRACT: detect and/or install zeromq
+# ABSTRACT: finding and installing libzmq, the core zeromq library
 
 use warnings;
 use strict;
