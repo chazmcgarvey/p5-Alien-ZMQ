@@ -1,5 +1,7 @@
---- a/Makefile.in	2012-11-23 00:58:57.000000000 -0700
-+++ b/Makefile.in	2013-01-18 23:08:21.794836073 -0700
+This patch prevents the tests from being built. This is required for platforms
+that do not support pthreads.
+--- a/Makefile.in
++++ b/Makefile.in
 @@ -256,8 +256,8 @@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@

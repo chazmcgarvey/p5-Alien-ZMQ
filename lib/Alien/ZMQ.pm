@@ -1,5 +1,5 @@
 package Alien::ZMQ;
-# ABSTRACT: finding and installing libzmq, the core zeromq library
+# ABSTRACT: find and install libzmq, the core zeromq library
 
 use warnings;
 use strict;
@@ -9,15 +9,9 @@ use String::ShellQuote qw/shell_quote/;
 =head1 DESCRIPTION
 
 Upon installation, the target system is probed for the presence of libzmq.  If
-it is not found, B<libzmq 3.2.2> is installed in a shared directory.  In
+it is not found, B<libzmq 3.2.3> is installed in a shared directory.  In
 short, modules that need libzmq can depend on this module to make sure that it
-is available.
-
-This module is still B<EXPERIMENTAL>.  In particular, I'm still pondering on
-how S<libzmq-2.x> should be handled.  Currently, if S<libzmq-2.x> is found on
-the system, L<Alien::ZMQ> will use it, but there is no way to install
-S<libzmq-2.x> with L<Alien::ZMQ>.  I'm not sure what the most useful behavior
-with regards to S<libzmq-2.x> is, so please talk to me if you have any ideas.
+is available, or use it independently as a way to install zeromq.
 
 =head1 SYNOPSIS
 
@@ -56,9 +50,9 @@ not be used when compiling libzmq from source (if it needs to be).  To affect
 the compiling of libzmq, using the L</--zmq-config> flag instead.
 
 A better alternative to using L</--zmq-cflags> and L</--zmq-libs> is to help
-the L<pkg-config(1)> program find your libzmq by using the C<PKG_CONFIG_PATH>
+the L<pkg-config> program find your libzmq by using the C<PKG_CONFIG_PATH>
 environment variable.  Of course, this method requires that you have the
-L<pkg-config(1)> program installed.  Here's an example:
+L<pkg-config> program installed.  Here's an example:
 
     perl Build.PL
     PKG_CONFIG_PATH=/opt/zeromq/lib/pkgconfig ./Build
@@ -85,6 +79,11 @@ system.
 Probing is only done during the installation of this module, so if you are
 using a system-installed version of libzmq and you uninstall or upgrade it,
 you will also need to reinstall L<Alien::ZMQ>.
+
+If S<libzmq-2.x> is found on the system, L<Alien::ZMQ> will use it.  There are
+a few incompatibilities between S<libzmq-2.x> and S<libzmq-3.x>, so your
+program may want to use the L</lib_version> method to check which version of
+libzmq is installed.
 
 =head1 BUGS
 
