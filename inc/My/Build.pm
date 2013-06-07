@@ -1,6 +1,5 @@
 package My::Build;
 
-use v5.10.1;
 use warnings FATAL => 'all';
 use strict;
 use utf8;
@@ -30,14 +29,14 @@ sub ACTION_code {
     $self->have_c_compiler or die "C compiler not found";
 
     unless (exists $args{'zmq-skip-probe'}) {
-        say "Probing...";
+        print "Probing...\n";
         %vars = $self->probe_zeromq;
     }
 
     if ($vars{inc_version} && $vars{lib_version} && $vars{inc_dir} && $vars{lib_dir}) {
-        say "Found ØMQ $vars{lib_version}; skipping installation";
+        print "Found ØMQ $vars{lib_version}; skipping installation\n";
     } else {
-        say "ØMQ not found; building from source...";
+        print "ØMQ not found; building from source...\n";
         %vars = $self->install_zeromq;
     }
 
@@ -159,11 +158,11 @@ sub install_zeromq {
     my $sha1 = $self->notes('zmq-sha1');
     my $archive = "zeromq-$version.tar.gz";
 
-    say "Downloading ØMQ $version source archive from download.zeromq.org...";
+    print "Downloading ØMQ $version source archive from download.zeromq.org...\n";
     getstore("http://download.zeromq.org/$archive", $archive) == RC_OK
         or die "Failed to download ØMQ source archive";
 
-    say "Verifying...";
+    print "Verifying...\n";
     my $sha1sum = Digest::SHA->new;
     open my $ARCHIVE, '<', $archive or die "Can't open source archive";
     binmode $ARCHIVE;
@@ -171,7 +170,7 @@ sub install_zeromq {
     close $ARCHIVE;
     $sha1sum->hexdigest eq $sha1 or die "Source archive checksum mismatch";
 
-    say "Extracting...";
+    print "Extracting...\n";
     Archive::Tar->new($archive)->extract;
     unlink $archive;
 
@@ -181,20 +180,20 @@ sub install_zeromq {
     my $srcdir  = catdir($basedir, "zeromq-$version");
     chdir $srcdir;
 
-    say "Patching...";
+    print "Patching...\n";
     for my $patch (glob("$basedir/files/zeromq-$version-*.patch")) {
 	run [qw/patch -p1/], '<', $patch or die "Failed to patch ØMQ";
     }
 
-    say "Configuring...";
+    print "Configuring...\n";
     my @config = $cb->split_like_shell($self->args('zmq-config') || "");
     $cb->do_system(qw/sh configure CPPFLAGS=-Wno-error/, "--prefix=$prefix", @config)
         or die "Failed to configure ØMQ";
 
-    say "Compiling...";
+    print "Compiling...\n";
     $cb->do_system("make") or die "Failed to make ØMQ";
 
-    say "Installing...";
+    print "Installing...\n";
     $cb->do_system(qw|make install prefix=/|, "DESTDIR=$datadir")
         or die "Failed to install ØMQ";
 
