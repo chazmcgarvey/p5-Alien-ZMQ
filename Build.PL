@@ -15,7 +15,7 @@ my $builder = My::Build->new(
     dist_version_from => "lib/Alien/ZMQ.pm",
     share_dir => "share",
 );
-$builder->notes('zmq-version', '3.2.3');
-$builder->notes('zmq-sha1', '6857a3a0e908eca58f7c0f90e2ba4695f6700957');
+$builder->notes('zmq-version', '3.2.4');
+$builder->notes('zmq-sha1', '08303259f08edd1faeac2e256f5be3899377135e');
 
 $builder->create_build_script;

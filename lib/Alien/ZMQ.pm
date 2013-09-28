@@ -9,7 +9,7 @@ use String::ShellQuote qw/shell_quote/;
 =head1 DESCRIPTION
 
 Upon installation, the target system is probed for the presence of libzmq.  If
-it is not found, B<libzmq 3.2.3> is installed in a shared directory.  In
+it is not found, B<libzmq 3.2.4> is installed in a shared directory.  In
 short, modules that need libzmq can depend on this module to make sure that it
 is available, or use it independently as a way to install zeromq.
 

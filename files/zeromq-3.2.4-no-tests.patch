@@ -1,8 +1,7 @@
-This patch prevents the tests from being built. This is required for platforms
-that do not support pthreads.
+This patch prevents the tests from being built. This is required for platforms that do not support pthreads.
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -256,8 +256,8 @@
+@@ -278,8 +278,8 @@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  ACLOCAL_AMFLAGS = -I config
