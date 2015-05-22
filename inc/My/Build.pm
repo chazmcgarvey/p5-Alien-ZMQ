@@ -180,8 +180,10 @@ sub install_zeromq {
     chdir $srcdir;
 
     print "Patching...\n";
+    # Strawberry Perl needs --binary flag to deal with newlines or it crashes
+    my @patch_binary = $^O eq 'MSWin32' ? qw(--binary) : ();
     for my $patch (glob("$basedir/files/zeromq-$version-*.patch")) {
-	run [qw/patch -p1/], '<', $patch or die "Failed to patch libzmq";
+        run [qw/patch -p1/, @patch_binary], '<', $patch or die "Failed to patch libzmq";
     }
 
     print "Configuring...\n";
