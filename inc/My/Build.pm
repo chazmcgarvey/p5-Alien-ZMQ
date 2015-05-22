@@ -179,24 +179,38 @@ sub install_zeromq {
     my $srcdir  = catdir($basedir, "zeromq-$version");
     chdir $srcdir;
 
+    my $run_env = sub { $_[0]->() };
+    if($^O eq 'MSWin32') {
+        require Alien::MSYS;
+        $run_env = \&Alien::MSYS::msys;
+    }
+
     print "Patching...\n";
     # Strawberry Perl needs --binary flag to deal with newlines or it crashes
     my @patch_binary = $^O eq 'MSWin32' ? qw(--binary) : ();
     for my $patch (glob("$basedir/files/zeromq-$version-*.patch")) {
-        run [qw/patch -p1/, @patch_binary], '<', $patch or die "Failed to patch libzmq";
+        $run_env->(sub {
+            run [qw/patch -p1/, @patch_binary], '<', $patch or die "Failed to patch libzmq";
+        });
     }
 
     print "Configuring...\n";
     my @config = $cb->split_like_shell($self->args('zmq-config') || "");
-    $cb->do_system(qw/sh configure CPPFLAGS=-Wno-error/, "--prefix=$prefix", @config)
-        or die "Failed to configure libzmq";
+    $run_env->(sub {
+        $cb->do_system(qw/sh configure CPPFLAGS=-Wno-error/, "--prefix=$prefix", @config)
+            or die "Failed to configure libzmq";
+    });
 
     print "Compiling...\n";
-    $cb->do_system("make") or die "Failed to make libzmq";
+    $run_env->(sub {
+        $cb->do_system("make") or die "Failed to make libzmq";
+    });
 
     print "Installing...\n";
-    $cb->do_system(qw|make install prefix=/|, "DESTDIR=$datadir")
-        or die "Failed to install libzmq";
+    $run_env->(sub {
+        $cb->do_system(qw|make install prefix=/|, "DESTDIR=$datadir")
+            or die "Failed to install libzmq";
+    });
 
     chdir $basedir;
     remove_tree($srcdir);
