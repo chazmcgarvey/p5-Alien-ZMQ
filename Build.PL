@@ -8,10 +8,18 @@ use My::Build;
 # prevent warnings about missing share directory
 make_path("share");
 
-my $builder = My::Build->new(
+my %module_build_args = (
     ##{ $plugin->get_prereqs ##}
     ##{ $plugin->get_default(qw/dist_name license dist_abstract/) ##}
     ##{ $plugin->get_default(qw/dist_author/) ##}
+);
+
+if($^O eq 'MSWin32') {
+    $module_build_args{build_requires}{'Alien::MSYS'} = '0';
+}
+
+my $builder = My::Build->new(
+    %module_build_args,
     dist_version_from => "lib/Alien/ZMQ.pm",
     share_dir => "share",
 );

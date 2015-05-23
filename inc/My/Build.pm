@@ -11,6 +11,7 @@ use File::Spec::Functions qw/catdir catfile/;
 use IPC::Run qw/run/;
 use LWP::Simple qw/getstore RC_OK/;
 use Module::Build;
+use B;
 
 use base 'Module::Build';
 
@@ -44,8 +45,8 @@ sub ACTION_code {
     open my $LIB, '<', $module or die "Cannot read module";
     my $lib = do { local $/; <$LIB> };
     close $LIB;
-    $lib =~ s/^sub inc_dir.*$/sub inc_dir { "$vars{inc_dir}" }/m;
-    $lib =~ s/^sub lib_dir.*$/sub lib_dir { "$vars{lib_dir}" }/m;
+    $lib =~ s/^sub inc_dir.*$/sub inc_dir { @{[ B::perlstring($vars{inc_dir}) ]} }/m;
+    $lib =~ s/^sub lib_dir.*$/sub lib_dir { @{[ B::perlstring($vars{lib_dir}) ]} }/m;
     $lib =~ s/^sub inc_version.*$/sub inc_version { v$vars{inc_version} }/m;
     $lib =~ s/^sub lib_version.*$/sub lib_version { v$vars{lib_version} }/m;
     my @stats = stat $module;
@@ -179,22 +180,49 @@ sub install_zeromq {
     my $srcdir  = catdir($basedir, "zeromq-$version");
     chdir $srcdir;
 
+    my $run_env = sub { $_[0]->() };
+    if($^O eq 'MSWin32') {
+        require Alien::MSYS;
+        $run_env = sub {
+            my ($old_prefix, $old_datadir) = ($prefix, $datadir);
+            for my $dir ($prefix, $datadir) {
+                # turn Windows path into MSYS path
+                $dir =~ s|^(\w):|/$1|;
+                $dir =~ s|\\|/|g;
+            }
+
+            &Alien::MSYS::msys; # call with same arguments
+
+            ($prefix, $datadir) = ($old_prefix, $old_prefix);
+        };
+    }
+
     print "Patching...\n";
+    # Strawberry Perl needs --binary flag to deal with newlines or it crashes
+    my @patch_binary = $^O eq 'MSWin32' ? qw(--binary) : ();
     for my $patch (glob("$basedir/files/zeromq-$version-*.patch")) {
-	run [qw/patch -p1/], '<', $patch or die "Failed to patch libzmq";
+        $run_env->(sub {
+            run [qw/patch -p1/, @patch_binary], '<', $patch or die "Failed to patch libzmq";
+        });
     }
 
     print "Configuring...\n";
     my @config = $cb->split_like_shell($self->args('zmq-config') || "");
-    $cb->do_system(qw/sh configure CPPFLAGS=-Wno-error/, "--prefix=$prefix", @config)
-        or die "Failed to configure libzmq";
+    $run_env->(sub {
+        $cb->do_system(qw/sh configure CPPFLAGS=-Wno-error/, "--prefix=$prefix", @config)
+            or die "Failed to configure libzmq";
+    });
 
     print "Compiling...\n";
-    $cb->do_system("make") or die "Failed to make libzmq";
+    $run_env->(sub {
+        $cb->do_system("make") or die "Failed to make libzmq";
+    });
 
     print "Installing...\n";
-    $cb->do_system(qw|make install prefix=/|, "DESTDIR=$datadir")
-        or die "Failed to install libzmq";
+    $run_env->(sub {
+        $cb->do_system(qw|make install prefix=/|, "DESTDIR=$datadir")
+            or die "Failed to install libzmq";
+    });
 
     chdir $basedir;
     remove_tree($srcdir);
