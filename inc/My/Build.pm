@@ -11,6 +11,7 @@ use File::Spec::Functions qw/catdir catfile/;
 use IPC::Run qw/run/;
 use LWP::Simple qw/getstore RC_OK/;
 use Module::Build;
+use B;
 
 use base 'Module::Build';
 
@@ -44,8 +45,8 @@ sub ACTION_code {
     open my $LIB, '<', $module or die "Cannot read module";
     my $lib = do { local $/; <$LIB> };
     close $LIB;
-    $lib =~ s/^sub inc_dir.*$/sub inc_dir { "$vars{inc_dir}" }/m;
-    $lib =~ s/^sub lib_dir.*$/sub lib_dir { "$vars{lib_dir}" }/m;
+    $lib =~ s/^sub inc_dir.*$/sub inc_dir { @{[ B::perlstring($vars{inc_dir}) ]} }/m;
+    $lib =~ s/^sub lib_dir.*$/sub lib_dir { @{[ B::perlstring($vars{lib_dir}) ]} }/m;
     $lib =~ s/^sub inc_version.*$/sub inc_version { v$vars{inc_version} }/m;
     $lib =~ s/^sub lib_version.*$/sub lib_version { v$vars{lib_version} }/m;
     my @stats = stat $module;
