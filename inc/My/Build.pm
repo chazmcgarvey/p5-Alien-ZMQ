@@ -182,7 +182,18 @@ sub install_zeromq {
     my $run_env = sub { $_[0]->() };
     if($^O eq 'MSWin32') {
         require Alien::MSYS;
-        $run_env = \&Alien::MSYS::msys;
+        $run_env = sub {
+            my ($old_prefix, $old_datadir) = ($prefix, $datadir);
+            for my $dir ($prefix, $datadir) {
+                # turn Windows path into MSYS path
+                $dir =~ s|^(\w):|/$1|;
+                $dir =~ s|\\|/|g;
+            }
+
+            &Alien::MSYS::msys; # call with same arguments
+
+            ($prefix, $datadir) = ($old_prefix, $old_prefix);
+        };
     }
 
     print "Patching...\n";
