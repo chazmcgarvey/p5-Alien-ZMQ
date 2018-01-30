@@ -44,8 +44,8 @@ sub ACTION_code {
     open my $LIB, '<', $module or die "Cannot read module";
     my $lib = do { local $/; <$LIB> };
     close $LIB;
-    $lib =~ s/^sub inc_dir.*$/sub inc_dir { "$vars{inc_dir}" }/m;
-    $lib =~ s/^sub lib_dir.*$/sub lib_dir { "$vars{lib_dir}" }/m;
+    $lib =~ s/^sub inc_dir.*$/sub inc_dir { q[$vars{inc_dir}] }/m;
+    $lib =~ s/^sub lib_dir.*$/sub lib_dir { q[$vars{lib_dir}] }/m;
     $lib =~ s/^sub inc_version.*$/sub inc_version { v$vars{inc_version} }/m;
     $lib =~ s/^sub lib_version.*$/sub lib_version { v$vars{lib_version} }/m;
     my @stats = stat $module;
@@ -156,9 +156,9 @@ sub install_zeromq {
     my $version = $self->notes('zmq-version');
     my $sha1 = $self->notes('zmq-sha1');
     my $archive = "zeromq-$version.tar.gz";
-
-    print "Downloading libzmq $version source archive from download.zeromq.org...\n";
-    getstore("http://download.zeromq.org/$archive", $archive) == RC_OK
+    my $rel_dir = "https://github.com/zeromq/zeromq3-x/releases/download/v$version";
+    print "Downloading libzmq $version source archive from $rel_dir...\n";
+    getstore("$rel_dir/$archive", $archive) == RC_OK
         or die "Failed to download libzmq source archive";
 
     print "Verifying...\n";

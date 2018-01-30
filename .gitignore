@@ -1,2 +1,9 @@
 /.build
 /Alien-ZMQ-*
+Build
+_build
+MYMETA.*
+*.bak
+build-zeromq
+share
+blib

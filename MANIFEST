@@ -1,0 +1,12 @@
+Build.PL
+cpanfile
+dist.ini
+examples/01-compile.t
+examples/Makefile.PL
+files/zeromq-3.2.4-conditional-eproto.patch
+files/zeromq-3.2.4-no-tests.patch
+inc/My/Build.pm
+lib/Alien/ZMQ.pm
+MANIFEST
+README.md
+t/00-basic.t
