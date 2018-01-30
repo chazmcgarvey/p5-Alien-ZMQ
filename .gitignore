@@ -1,2 +1,6 @@
 /.build
 /Alien-ZMQ-*
+Build
+_build
+MYMETA.*
+*.bak

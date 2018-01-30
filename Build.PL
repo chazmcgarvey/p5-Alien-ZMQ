@@ -12,7 +12,9 @@ my $builder = My::Build->new(
     ##{ $plugin->get_prereqs ##}
     ##{ $plugin->get_default(qw/dist_name license dist_abstract/) ##}
     ##{ $plugin->get_default(qw/dist_author/) ##}
+    module_name => "Alien::ZMQ",
     dist_version_from => "lib/Alien/ZMQ.pm",
+    dist_abstract => "find and install libzmq, the core zeromq library",
     share_dir => "share",
 );
 $builder->notes('zmq-version', '3.2.4');
